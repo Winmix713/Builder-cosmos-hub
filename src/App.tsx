@@ -9,23 +9,21 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
 import {
   Figma,
   Play,
   AlertCircle,
   CheckCircle,
-  Copy,
-  Download,
   Eye,
+  Code2,
 } from "lucide-react";
 import { figmaService } from "@/services/figmaService";
 import { figmaConverter } from "@/core/converter";
-import { ConversionResult } from "@/types/figma";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { ConversionResult, GeneratedComponent } from "@/types/figma";
+import { CodeDisplay } from "@/components/CodeDisplay";
+import { ComponentPreview } from "@/components/ComponentPreview";
+import { ProgressIndicator } from "@/components/ProgressIndicator";
 
 interface AppState {
   figmaUrl: string;
@@ -34,6 +32,7 @@ interface AppState {
   progress: number;
   status: string;
   result: ConversionResult | null;
+  selectedComponent: GeneratedComponent | null;
   error: string;
 }
 
@@ -45,6 +44,7 @@ const App: React.FC = () => {
     progress: 0,
     status: "",
     result: null,
+    selectedComponent: null,
     error: "",
   });
 
@@ -68,6 +68,7 @@ const App: React.FC = () => {
       isConverting: true,
       error: "",
       result: null,
+      selectedComponent: null,
       progress: 0,
       status: "Konverzió indítása...",
     });
@@ -110,22 +111,25 @@ const App: React.FC = () => {
       }
 
       updateProgress(50, "Design elemzése...");
-
-      // Small delay to show progress
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       updateProgress(70, "React komponensek generálása...");
-
       const result = await figmaConverter.convertFigmaFile(figmaFile);
 
       updateProgress(90, "Kód optimalizálása...");
-
-      // Another small delay
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       updateProgress(100, "Konverzió befejezve!");
 
-      updateState({ result, isConverting: false });
+      // Set the first component as selected
+      const selectedComponent =
+        result.components.length > 0 ? result.components[0] : null;
+
+      updateState({
+        result,
+        selectedComponent,
+        isConverting: false,
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Ismeretlen hiba történt";
@@ -138,22 +142,8 @@ const App: React.FC = () => {
     }
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (error) {
-      console.error("Másolás sikertelen:", error);
-    }
-  };
-
-  const downloadCode = (component: any) => {
-    const element = document.createElement("a");
-    const file = new Blob([component.code], { type: "text/plain" });
-    element.href = URL.createObjectURL(file);
-    element.download = `${component.name}.tsx`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  const handleComponentSelect = (component: GeneratedComponent) => {
+    updateState({ selectedComponent: component });
   };
 
   const isValidFigmaUrl = (url: string) => {
@@ -183,7 +173,7 @@ const App: React.FC = () => {
               </h1>
               <p className="text-sm text-muted-foreground">
                 Alakítsa át Figma designjait production-ready React
-                komponensekké
+                komponensekké CSS-in-JS használatával
               </p>
             </div>
           </div>
@@ -235,6 +225,17 @@ const App: React.FC = () => {
                       updateState({ accessToken: e.target.value })
                     }
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Hozzon létre tokent a Figma fiók beállításokban.{" "}
+                    <a
+                      href="https://www.figma.com/developers/api#access-tokens"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Útmutató →
+                    </a>
+                  </p>
                 </div>
               </div>
 
@@ -243,16 +244,6 @@ const App: React.FC = () => {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{state.error}</AlertDescription>
                 </Alert>
-              )}
-
-              {state.isConverting && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    {state.status}
-                  </div>
-                  <Progress value={state.progress} className="h-2" />
-                </div>
               )}
 
               <Button
@@ -270,127 +261,108 @@ const App: React.FC = () => {
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
                     Sikeresen generálva {state.result.components.length}{" "}
-                    komponens!
+                    komponens! Emotion CSS-in-JS stílusokkal.
                   </AlertDescription>
                 </Alert>
               )}
             </CardContent>
           </Card>
 
+          {/* Progress Indicator */}
+          {state.isConverting && (
+            <ProgressIndicator
+              progress={state.progress}
+              status={state.status}
+              className="bg-white/60 backdrop-blur-sm border-0 shadow-xl"
+            />
+          )}
+
           {/* Results Section */}
           {state.result && state.result.success && (
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Generated Code */}
+              <CodeDisplay
+                components={state.result.components}
+                designTokens={state.result.designTokens}
+                selectedComponent={state.selectedComponent || undefined}
+                onComponentSelect={handleComponentSelect}
+                className="bg-white/60 backdrop-blur-sm border-0 shadow-xl"
+                theme="dark"
+              />
+
+              {/* Component Preview */}
               <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Generált Kód</CardTitle>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Letöltés
-                      </Button>
+                      <Eye className="w-5 h-5" />
+                      <CardTitle>Komponens Előnézet</CardTitle>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="components" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="components">Komponensek</TabsTrigger>
-                      <TabsTrigger value="tokens">Design Tokenek</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="components" className="mt-4">
-                      {state.result.components.length > 0 && (
-                        <div className="space-y-4">
-                          {state.result.components.map((component, index) => (
-                            <div key={index} className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">
-                                  {component.name}
-                                </h4>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      copyToClipboard(component.code)
-                                    }
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => downloadCode(component)}
-                                  >
-                                    <Download className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                              <div className="rounded-lg overflow-hidden border">
-                                <SyntaxHighlighter
-                                  language="tsx"
-                                  style={oneDark}
-                                  customStyle={{
-                                    margin: 0,
-                                    fontSize: "14px",
-                                    maxHeight: "400px",
-                                  }}
-                                >
-                                  {component.code}
-                                </SyntaxHighlighter>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="tokens" className="mt-4">
-                      <div className="rounded-lg overflow-hidden border">
-                        <SyntaxHighlighter
-                          language="css"
-                          style={oneDark}
-                          customStyle={{
-                            margin: 0,
-                            fontSize: "14px",
-                            maxHeight: "400px",
-                          }}
-                        >
-                          {JSON.stringify(state.result.designTokens, null, 2)}
-                        </SyntaxHighlighter>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-
-              {/* Live Preview */}
-              <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Élő Előnézet</CardTitle>
                     <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4 mr-2" />
+                      <Code2 className="w-4 h-4 mr-2" />
                       Teljes Előnézet
                     </Button>
                   </div>
+                  <CardDescription>
+                    A generált komponens vizuális megjelenítése
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-96 flex items-center justify-center bg-muted/50 rounded-lg">
-                    <div className="text-center space-y-2 text-muted-foreground">
-                      <Eye className="w-12 h-12 mx-auto opacity-50" />
-                      <p>Az élő előnézet hamarosan elérhető lesz</p>
-                      <p className="text-sm">
-                        A komponensek előnézete egy későbbi frissítésben lesz
-                        elérhető
-                      </p>
-                    </div>
-                  </div>
+                  <ComponentPreview
+                    component={state.selectedComponent || undefined}
+                  />
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Features Info */}
+          {!state.result && !state.isConverting && (
+            <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Mit kap?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>TypeScript React komponensek</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Emotion CSS-in-JS stílusok</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Auto Layout → Flexbox konverzió</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Komponens props generálás</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Design tokenek kinyerése</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>SVG ikonok beépítése</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Újrafelhasználható komponensek</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Tiszta, karbantartható kód</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
