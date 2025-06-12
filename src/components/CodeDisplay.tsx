@@ -30,7 +30,7 @@ interface CodeDisplayProps {
 }
 
 export function CodeDisplay({ className }: CodeDisplayProps) {
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("code");
 
