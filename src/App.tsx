@@ -354,33 +354,47 @@ const App: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Emotion CSS-in-JS stílusok</span>
+                      <span className="text-white/80">
+                        Emotion CSS-in-JS stílusok
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Auto Layout → Flexbox konverzió</span>
+                      <span className="text-white/80">
+                        Auto Layout → Flexbox konverzió
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Komponens props generálás</span>
+                      <span className="text-white/80">
+                        Komponens props generálás
+                      </span>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Design tokenek kinyerése</span>
+                      <span className="text-white/80">
+                        Design tokenek kinyerése
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>SVG ikonok beépítése</span>
+                      <span className="text-white/80">
+                        SVG ikonok beépítése
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Újrafelhasználható komponensek</span>
+                      <span className="text-white/80">
+                        Újrafelhasználható komponensek
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Tiszta, karbantartható kód</span>
+                      <span className="text-white/80">
+                        Tiszta, karbantartható kód
+                      </span>
                     </div>
                   </div>
                 </div>
