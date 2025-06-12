@@ -159,19 +159,20 @@ const App: React.FC = () => {
     !state.isConverting;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#131316] via-[#1a1a1f] to-[#2a2a30]">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-[#616266]/30 bg-[#131316]/90 backdrop-blur-sm sticky top-0 z-50 shadow-lg shadow-black/20">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#616266] rounded-xl flex items-center justify-center shadow-lg shadow-[#131316]/50 relative">
+              <div className="absolute inset-0 bg-[#131316] rounded-xl opacity-75 mix-blend-soft-light"></div>
               <Figma className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold text-white/90">
                 Figma → React Konverter
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#616266]">
                 Alakítsa át Figma designjait production-ready React
                 komponensekké CSS-in-JS használatával
               </p>
@@ -183,10 +184,13 @@ const App: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Input Section */}
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="bg-[#616266]/20 backdrop-blur-sm border border-[#616266]/30 shadow-2xl shadow-[#131316]/50 relative">
+            <div className="absolute inset-0 bg-[#131316]/75 rounded-lg mix-blend-soft-light pointer-events-none"></div>
             <CardHeader>
-              <CardTitle>Design Input</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white/90 relative z-10">
+                Design Input
+              </CardTitle>
+              <CardDescription className="text-[#616266] relative z-10">
                 Adja meg a Figma fájl URL-jét és personal access token-jét a
                 konverzió megkezdéséhez
               </CardDescription>
@@ -194,7 +198,12 @@ const App: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="figma-url">Figma Fájl URL</Label>
+                  <Label
+                    htmlFor="figma-url"
+                    className="text-white/80 relative z-10"
+                  >
+                    Figma Fájl URL
+                  </Label>
                   <Input
                     id="figma-url"
                     type="url"
@@ -215,7 +224,12 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="access-token">Personal Access Token</Label>
+                  <Label
+                    htmlFor="access-token"
+                    className="text-white/80 relative z-10"
+                  >
+                    Personal Access Token
+                  </Label>
                   <Input
                     id="access-token"
                     type="password"
@@ -225,13 +239,13 @@ const App: React.FC = () => {
                       updateState({ accessToken: e.target.value })
                     }
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#616266] relative z-10">
                     Hozzon létre tokent a Figma fiók beállításokban.{" "}
                     <a
                       href="https://www.figma.com/developers/api#access-tokens"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-white/70 hover:text-white hover:underline"
                     >
                       Útmutató →
                     </a>
@@ -249,7 +263,7 @@ const App: React.FC = () => {
               <Button
                 onClick={handleConvert}
                 disabled={!canConvert}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="w-full bg-[#616266] hover:bg-[#6a6b70] shadow-lg shadow-[#131316]/50 text-white border border-[#616266]/50 relative z-10 transition-all duration-300 hover:shadow-xl hover:shadow-[#131316]/70"
                 size="lg"
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -257,9 +271,10 @@ const App: React.FC = () => {
               </Button>
 
               {state.result && state.result.success && (
-                <Alert>
+                <Alert className="bg-[#616266]/20 border-[#616266]/40 relative z-10">
+                  <div className="absolute inset-0 bg-[#131316]/30 rounded mix-blend-soft-light pointer-events-none"></div>
                   <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
+                  <AlertDescription className="text-white/80 relative z-10">
                     Sikeresen generálva {state.result.components.length}{" "}
                     komponens! Emotion CSS-in-JS stílusokkal.
                   </AlertDescription>
@@ -273,7 +288,7 @@ const App: React.FC = () => {
             <ProgressIndicator
               progress={state.progress}
               status={state.status}
-              className="bg-white/60 backdrop-blur-sm border-0 shadow-xl"
+              className="bg-[#616266]/20 backdrop-blur-sm border border-[#616266]/30 shadow-2xl shadow-[#131316]/50 relative overflow-hidden"
             />
           )}
 
@@ -286,24 +301,27 @@ const App: React.FC = () => {
                 designTokens={state.result.designTokens}
                 selectedComponent={state.selectedComponent || undefined}
                 onComponentSelect={handleComponentSelect}
-                className="bg-white/60 backdrop-blur-sm border-0 shadow-xl"
+                className="bg-[#616266]/20 backdrop-blur-sm border border-[#616266]/30 shadow-2xl shadow-[#131316]/50 relative overflow-hidden"
                 theme="dark"
               />
 
               {/* Component Preview */}
-              <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
+              <Card className="bg-[#616266]/20 backdrop-blur-sm border border-[#616266]/30 shadow-2xl shadow-[#131316]/50 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[#131316]/75 rounded-lg mix-blend-soft-light pointer-events-none"></div>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Eye className="w-5 h-5" />
-                      <CardTitle>Komponens Előnézet</CardTitle>
+                      <CardTitle className="text-white/90 relative z-10">
+                        Komponens Előnézet
+                      </CardTitle>
                     </div>
                     <Button variant="outline" size="sm">
                       <Code2 className="w-4 h-4 mr-2" />
                       Teljes Előnézet
                     </Button>
                   </div>
-                  <CardDescription>
+                  <CardDescription className="text-[#616266] relative z-10">
                     A generált komponens vizuális megjelenítése
                   </CardDescription>
                 </CardHeader>
@@ -318,16 +336,21 @@ const App: React.FC = () => {
 
           {/* Features Info */}
           {!state.result && !state.isConverting && (
-            <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-[#616266]/20 backdrop-blur-sm border border-[#616266]/30 shadow-2xl shadow-[#131316]/50 relative overflow-hidden">
+              <div className="absolute inset-0 bg-[#131316]/75 rounded-lg mix-blend-soft-light pointer-events-none"></div>
               <CardHeader>
-                <CardTitle className="text-lg">Mit kap?</CardTitle>
+                <CardTitle className="text-lg text-white/90 relative z-10">
+                  Mit kap?
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div className="grid md:grid-cols-2 gap-4 text-sm relative z-10">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>TypeScript React komponensek</span>
+                      <span className="text-white/80">
+                        TypeScript React komponensek
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
