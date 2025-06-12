@@ -74,6 +74,39 @@ const App: React.FC = () => {
     });
 
     try {
+      // Demo mód ellenőrzése
+      const isDemoMode =
+        state.figmaUrl.includes("demo") ||
+        state.figmaUrl.includes("test") ||
+        state.figmaUrl.includes("example") ||
+        state.accessToken === "demo" ||
+        state.accessToken === "test";
+
+      if (isDemoMode) {
+        // Mock konverzió demo célokra
+        updateProgress(20, "Demo mód - Mock komponensek generálása...");
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        updateProgress(60, "Komponensek feldolgozása...");
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        const { mockConverter } = await import("@/core/mockConverter");
+        const result = await mockConverter.convertMockDesign();
+
+        updateProgress(100, "Demo konverzió befejezve!");
+
+        const selectedComponent =
+          result.components.length > 0 ? result.components[0] : null;
+
+        updateState({
+          result,
+          selectedComponent,
+          isConverting: false,
+        });
+        return;
+      }
+
+      // Valódi Figma API konverzió
       updateProgress(10, "Figma fájl adatok lekérése...");
 
       const fileKey = figmaService.extractFileKey(state.figmaUrl);
@@ -250,6 +283,24 @@ const App: React.FC = () => {
                       Útmutató →
                     </a>
                   </p>
+                  <div className="mt-3 p-3 bg-[#616266]/10 border border-[#616266]/20 rounded-lg relative z-10">
+                    <p className="text-xs text-white/60 mb-2">
+                      💡 <strong>Demo mód:</strong> Próbálja ki az alkalmazást
+                      demo adatokkal:
+                    </p>
+                    <div className="space-y-1 text-xs">
+                      <p className="text-[#616266]">
+                        URL:{" "}
+                        <span className="text-white/70 font-mono">
+                          https://figma.com/demo
+                        </span>
+                      </p>
+                      <p className="text-[#616266]">
+                        Token:{" "}
+                        <span className="text-white/70 font-mono">demo</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 

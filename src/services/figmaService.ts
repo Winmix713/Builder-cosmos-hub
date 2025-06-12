@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { FigmaFile, FigmaNode } from "@/types/figma";
+import { DEBUG, Timer } from "@/utils/debug";
 
 class FigmaService {
   private api: AxiosInstance;
@@ -64,13 +65,17 @@ class FigmaService {
   }
 
   async fetchFigmaFile(fileKey: string, token: string): Promise<FigmaFile> {
+    const timer = new Timer(`Figma file fetch: ${fileKey}`);
     const cacheKey = `file_${fileKey}`;
 
     if (this.cache.has(cacheKey)) {
+      DEBUG.log("Cache hit for file:", fileKey);
+      timer.end();
       return this.cache.get(cacheKey);
     }
 
     this.setAccessToken(token);
+    DEBUG.log("Fetching Figma file:", fileKey);
 
     try {
       const response: AxiosResponse<FigmaFile> = await this.api.get(
@@ -78,10 +83,14 @@ class FigmaService {
       );
 
       const file = response.data;
+      DEBUG.inspectFigmaResponse(file);
+
       this.cache.set(cacheKey, file);
+      timer.end();
       return file;
     } catch (error) {
-      console.error("Hiba a Figma fájl lekérése során:", error);
+      DEBUG.error("Hiba a Figma fájl lekérése során:", error);
+      timer.end();
       throw error;
     }
   }

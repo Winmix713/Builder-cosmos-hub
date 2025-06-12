@@ -7,6 +7,7 @@ import {
   DesignTokens,
 } from "@/types/figma";
 import { StyleConverter } from "./styleConverter";
+import { DEBUG, Timer } from "@/utils/debug";
 
 export class FigmaConverter {
   private styleConverter: StyleConverter;
@@ -20,17 +21,28 @@ export class FigmaConverter {
   }
 
   async convertFigmaFile(figmaFile: FigmaFile): Promise<ConversionResult> {
+    const timer = new Timer("Figma file conversion");
+
     try {
+      DEBUG.log("Starting conversion for file:", figmaFile.name);
+      DEBUG.inspectNodeTree(figmaFile.document);
+
       // Initialize design tokens and style mappings
       const designTokens = this.extractDesignTokens(figmaFile);
+      DEBUG.log("Extracted design tokens:", Object.keys(designTokens));
+
       this.initializeStyleMappings(figmaFile);
       this.styleConverter.setStyleIdMap(this.styleIdToNameMap);
 
       // Find all components first
       this.indexComponents(figmaFile.document);
+      DEBUG.log("Indexed components:", this.components.size);
 
       // Convert main document
       const mainComponents = this.convertDocument(figmaFile.document);
+      DEBUG.log("Generated components:", mainComponents.length);
+
+      timer.end();
 
       return {
         success: true,
@@ -40,6 +52,9 @@ export class FigmaConverter {
         warnings: [],
       };
     } catch (error) {
+      DEBUG.error("Conversion error:", error);
+      timer.end();
+
       return {
         success: false,
         components: [],
