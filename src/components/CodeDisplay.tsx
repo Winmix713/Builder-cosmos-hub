@@ -99,18 +99,18 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white/90">
             <FileText className="w-5 h-5" />
             Generált Kód
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-[#616266]">
             A konverzió után itt jelenik meg a generált React kód
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-64 text-muted-foreground">
+        <CardContent className="flex items-center justify-center h-64 text-[#616266]">
           <div className="text-center space-y-2">
             <FileText className="w-12 h-12 mx-auto opacity-50" />
-            <p>Még nincs generált kód</p>
+            <p className="text-white/70">Még nincs generált kód</p>
           </div>
         </CardContent>
       </Card>
@@ -123,7 +123,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            <CardTitle>Generált Kód</CardTitle>
+            <CardTitle className="text-white/90">Generált Kód</CardTitle>
           </div>
 
           <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           </div>
         </div>
 
-        <CardDescription>
+        <CardDescription className="text-[#616266]">
           {component.name} - {component.props.length} props
         </CardDescription>
       </CardHeader>
