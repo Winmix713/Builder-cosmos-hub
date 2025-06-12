@@ -49,27 +49,30 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   ];
 
   return (
-    <Card className={className}>
-      <CardContent className="pt-6">
+    <Card className={`${className} relative overflow-hidden`}>
+      <div className="absolute inset-0 bg-[#131316]/75 rounded-lg mix-blend-soft-light pointer-events-none"></div>
+      <CardContent className="pt-6 relative z-10">
         <div className="space-y-4">
           {/* Overall Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Konverzió előrehaladása</span>
-              <span className="text-muted-foreground">{progress}%</span>
+              <span className="font-medium text-white/90">
+                Konverzió előrehaladása
+              </span>
+              <span className="text-[#616266]">{progress}%</span>
             </div>
             <Progress value={progress} className="h-2" />
           </div>
 
           {/* Current Status */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-[#616266]">
             <Loader2 className="w-4 h-4 animate-spin" />
             {status}
           </div>
 
           {/* Step by Step Progress */}
           <div className="space-y-3 pt-2">
-            <h4 className="text-sm font-medium">Lépések</h4>
+            <h4 className="text-sm font-medium text-white/90">Lépések</h4>
             <div className="space-y-2">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center gap-3">
@@ -85,10 +88,10 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                   <span
                     className={`text-sm ${
                       step.completed
-                        ? "text-green-600 font-medium"
+                        ? "text-green-400 font-medium"
                         : step.current
-                          ? "text-blue-600 font-medium"
-                          : "text-muted-foreground"
+                          ? "text-white/90 font-medium"
+                          : "text-[#616266]"
                     }`}
                   >
                     {step.label}
@@ -100,7 +103,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
           {/* Estimated Time */}
           <div className="pt-2 border-t">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-[#616266]">
               <span>Becsült idő:</span>
               <span>
                 {progress < 50
