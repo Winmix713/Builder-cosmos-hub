@@ -119,7 +119,7 @@ export function CodeDisplay({ className }: CodeDisplayProps) {
               <Select
                 value={state.selectedComponent || ""}
                 onValueChange={(value) =>
-                  state.dispatch({
+                  dispatch({
                     type: "SET_SELECTED_COMPONENT",
                     payload: value,
                   })
