@@ -11,31 +11,31 @@ class FigmaService {
       timeout: 30000,
     });
 
-    // Add response interceptor for error handling
+    // Response interceptor for error handling
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
           throw new Error(
-            "Invalid Figma access token. Please check your token and try again.",
+            "Érvénytelen Figma access token. Kérjük, ellenőrizze a tokent és próbálja újra.",
           );
         }
         if (error.response?.status === 403) {
           throw new Error(
-            "Access denied. Please ensure your token has permission to access this file.",
+            "Hozzáférés megtagadva. Ellenőrizze, hogy a token rendelkezik-e a fájl elérési jogával.",
           );
         }
         if (error.response?.status === 404) {
           throw new Error(
-            "Figma file not found. Please check the URL and try again.",
+            "A Figma fájl nem található. Ellenőrizze az URL-t és próbálja újra.",
           );
         }
         if (error.code === "ECONNABORTED") {
-          throw new Error("Request timeout. Please try again.");
+          throw new Error("Kérés időtúllépés. Kérjük, próbálja újra.");
         }
         throw new Error(
           error.response?.data?.message ||
-            "An error occurred while fetching from Figma API",
+            "Hiba történt a Figma API hívás során",
         );
       },
     );
@@ -49,7 +49,7 @@ class FigmaService {
     const match = url.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]+)/);
     if (!match) {
       throw new Error(
-        "Invalid Figma URL. Please provide a valid Figma file URL.",
+        "Érvénytelen Figma URL. Kérjük, adjon meg egy érvényes Figma fájl URL-t.",
       );
     }
     return match[1];
@@ -63,23 +63,25 @@ class FigmaService {
     return [];
   }
 
-  async getFile(fileKey: string): Promise<FigmaFile> {
+  async fetchFigmaFile(fileKey: string, token: string): Promise<FigmaFile> {
     const cacheKey = `file_${fileKey}`;
 
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
 
+    this.setAccessToken(token);
+
     try {
       const response: AxiosResponse<FigmaFile> = await this.api.get(
-        `/files/${fileKey}`,
+        `/files/${fileKey}?geometry=paths`,
       );
-      const file = response.data;
 
+      const file = response.data;
       this.cache.set(cacheKey, file);
       return file;
     } catch (error) {
-      console.error("Error fetching Figma file:", error);
+      console.error("Hiba a Figma fájl lekérése során:", error);
       throw error;
     }
   }
@@ -87,9 +89,10 @@ class FigmaService {
   async getFileNodes(
     fileKey: string,
     nodeIds: string[],
+    token: string,
   ): Promise<{ nodes: Record<string, FigmaNode> }> {
     if (nodeIds.length === 0) {
-      throw new Error("No node IDs provided");
+      throw new Error("Nem adtak meg node ID-kat");
     }
 
     const cacheKey = `nodes_${fileKey}_${nodeIds.join(",")}`;
@@ -98,17 +101,20 @@ class FigmaService {
       return this.cache.get(cacheKey);
     }
 
+    this.setAccessToken(token);
+
     try {
       const response = await this.api.get(`/files/${fileKey}/nodes`, {
         params: {
           ids: nodeIds.join(","),
+          geometry: "paths",
         },
       });
 
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching Figma nodes:", error);
+      console.error("Hiba a Figma node-ok lekérése során:", error);
       throw error;
     }
   }
@@ -116,14 +122,17 @@ class FigmaService {
   async getImages(
     fileKey: string,
     nodeIds: string[],
-    format: "jpg" | "png" | "svg" | "pdf" = "png",
+    format: "jpg" | "png" | "svg" | "pdf" = "svg",
     scale: number = 1,
+    token: string,
   ): Promise<{ images: Record<string, string> }> {
     const cacheKey = `images_${fileKey}_${nodeIds.join(",")}_${format}_${scale}`;
 
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
+
+    this.setAccessToken(token);
 
     try {
       const response = await this.api.get(`/images/${fileKey}`, {
@@ -137,7 +146,7 @@ class FigmaService {
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching Figma images:", error);
+      console.error("Hiba a képek lekérése során:", error);
       throw error;
     }
   }
@@ -174,20 +183,20 @@ class FigmaService {
     return frames;
   }
 
-  findTextNodes(node: FigmaNode): FigmaNode[] {
-    const textNodes: FigmaNode[] = [];
+  findInstances(node: FigmaNode): FigmaNode[] {
+    const instances: FigmaNode[] = [];
 
-    if (node.type === "TEXT") {
-      textNodes.push(node);
+    if (node.type === "INSTANCE") {
+      instances.push(node);
     }
 
     if (node.children) {
       for (const child of node.children) {
-        textNodes.push(...this.findTextNodes(child));
+        instances.push(...this.findInstances(child));
       }
     }
 
-    return textNodes;
+    return instances;
   }
 
   clearCache() {
@@ -201,19 +210,6 @@ class FigmaService {
       return true;
     } catch (error) {
       return false;
-    }
-  }
-
-  async downloadAsset(url: string): Promise<Blob> {
-    try {
-      const response = await axios.get(url, {
-        responseType: "blob",
-        timeout: 15000,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error downloading asset:", error);
-      throw new Error("Failed to download asset");
     }
   }
 }
